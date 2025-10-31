@@ -8,6 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +63,17 @@ public class AssertJTest {
     }
 
     @Test
+    void exceptionMessageTest() {
+        IllegalStateException exception =
+                new IllegalStateException("상태가 올바르지 않습니다.");
+
+        assertThatThrownBy(() -> { throw exception; })
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("상태가 올바르지 않습니다.")
+                .hasNoCause();
+    }
+
+    @Test
     void shouldThrowException() {
         assertThatThrownBy(() -> {
             throw new IllegalArgumentException("잘못된 입력");
@@ -96,5 +109,46 @@ public class AssertJTest {
         int value = ThreadLocalRandom.current().nextInt(1, 10);
         System.out.println("반복 횟수: " + info.getCurrentRepetition());
         assertThat(value).isBetween(1, 9);
+    }
+
+    @Test
+    void optionalTest() {
+        Optional<String> optional = Optional.of("Hello");
+
+        assertThat(optional)
+                .isPresent()
+                .contains("Hello")
+                .hasValueSatisfying(value -> assertThat(value).startsWith("He"));
+    }
+
+    @Test
+    void listTest() {
+        List<Integer> numbers = List.of(3, 5, 7, 9);
+
+        assertThat(numbers)
+                .isSorted()
+                .doesNotContain(2, 4, 6, 8, 10)
+                .containsExactly(3, 5, 7, 9);
+    }
+
+    @Test
+    void mapTest() {
+        Map<String, Integer> scores = Map.of("Java", 90, "Spring", 80);
+
+        assertThat(scores)
+                .hasSize(2)
+                .containsEntry("Java", 90)
+                .containsKeys("Java", "Spring")
+                .doesNotContainKey("Python");
+    }
+
+    @Test
+    void blankStringTest() {
+        String text = "   ";
+
+        assertThat(text)
+                .isNotNull()
+                .isBlank()
+                .hasSize(3);
     }
 }
