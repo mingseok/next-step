@@ -6,6 +6,7 @@
 
 하나씩 다시 정리하고, 직접 코드로 검증한 결과를 남깁니다.
 
+<br/>
 
 ## 🧭 항상 “왜?”를 생각하기
 
@@ -39,6 +40,8 @@
   - ex1) Spring → BeanContainer가 의존성 주입을 담당, AOP로 횡단 관심 분리
   
   - ex2) JPA → EntityManager가 1차 캐시, 트랜잭션 단위로 flush, dirty checking 수행
+
+<br/>
 
 ## 📘 내용 정리
 
