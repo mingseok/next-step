@@ -42,6 +42,7 @@ public class RequestHandler extends Thread {
                 line = br.readLine();
             }
 
+            DataOutputStream dos = new DataOutputStream(out);
             if ("POST".equals(method)) {
                 String body = IOUtils.readData(br, contentLength);
                 Map<String, String> params = HttpRequestUtils.parseQueryString(body);
@@ -52,6 +53,8 @@ public class RequestHandler extends Thread {
                         params.get("email")
                 );
                 log.debug("user : {}", user);
+                response302Header(dos, "/index.html");
+                return;
             }
 
             String filePath = "./webapp" + url;
@@ -59,9 +62,18 @@ public class RequestHandler extends Thread {
             Path path = file.toPath();
             byte[] body = Files.readAllBytes(path);
 
-            DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, body.length);
             responseBody(dos, body);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
+            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
