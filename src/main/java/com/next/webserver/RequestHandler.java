@@ -28,6 +28,9 @@ public class RequestHandler extends Thread {
         ) {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String line = br.readLine();
+            String url = HttpRequestUtils.parseUrl(line);
+            log.debug("request url : {}", url);
+
             while (line != null && !line.isEmpty()) {
                 log.debug("request : {}", line);
                 line = br.readLine();
