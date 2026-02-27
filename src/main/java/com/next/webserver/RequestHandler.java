@@ -1,10 +1,9 @@
 package com.next.webserver;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +35,12 @@ public class RequestHandler extends Thread {
                 line = br.readLine();
             }
 
+            String filePath = "./webapp" + url;
+            File file = new File(filePath);
+            Path path = file.toPath();
+            byte[] body = Files.readAllBytes(path);
+
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = "Hello World".getBytes();
             response200Header(dos, body.length);
             responseBody(dos, body);
         } catch (IOException e) {
