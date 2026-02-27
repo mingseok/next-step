@@ -1,4 +1,4 @@
-package com.next.webserver;
+package com.next.webserver.utils;
 
 import java.util.HashMap;
 import java.util.Map;

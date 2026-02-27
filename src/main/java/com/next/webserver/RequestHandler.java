@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import com.next.webserver.utils.HttpRequestUtils;
+import com.next.webserver.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,23 +30,28 @@ public class RequestHandler extends Thread {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String line = br.readLine();
             String url = HttpRequestUtils.parseUrl(line);
+            String method = line.split(" ")[0];
             log.debug("request url : {}", url);
 
+            int contentLength = 0;
             while (line != null && !line.isEmpty()) {
                 log.debug("request : {}", line);
+                if (line.contains("Content-Length")) {
+                    contentLength = Integer.parseInt(line.split(": ")[1].trim());
+                }
                 line = br.readLine();
             }
 
-            if (url.contains("?")) {
-                int index = url.indexOf("?");
-                String requestPath = url.substring(0, index);
-                String queryString = url.substring(index + 1);
-
-                Map<String, String> params = HttpRequestUtils.parseQueryString(queryString);
-                User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
+            if ("POST".equals(method)) {
+                String body = IOUtils.readData(br, contentLength);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
+                User user = new User(
+                        params.get("userId"),
+                        params.get("password"),
+                        params.get("name"),
+                        params.get("email")
+                );
                 log.debug("user : {}", user);
-
-                url = requestPath;
             }
 
             String filePath = "./webapp" + url;
