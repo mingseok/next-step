@@ -20,10 +20,19 @@ public class RequestHandler extends Thread {
     }
 
     public void run() {
-        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
-                connection.getPort());
+        log.debug("새로운 유저 연결! 연결됨 IP : {}, Port : {}",
+                connection.getInetAddress(), connection.getPort());
 
-        try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+        try (InputStream in = connection.getInputStream();
+             OutputStream out = connection.getOutputStream()
+        ) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line = br.readLine();
+            while (line != null && !line.isEmpty()) {
+                log.debug("request : {}", line);
+                line = br.readLine();
+            }
+
             DataOutputStream dos = new DataOutputStream(out);
             byte[] body = "Hello World".getBytes();
             response200Header(dos, body.length);
