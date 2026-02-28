@@ -36,10 +36,14 @@ public class RequestHandler extends Thread {
             log.debug("request url : {}", url);
 
             int contentLength = 0;
+            String cookie = "";
             while (line != null && !line.isEmpty()) {
                 log.debug("request : {}", line);
                 if (line.contains("Content-Length")) {
                     contentLength = Integer.parseInt(line.split(": ")[1].trim());
+                }
+                if (line.contains("Cookie")) {
+                    cookie = line.split(": ")[1].trim();
                 }
                 line = br.readLine();
             }
@@ -73,6 +77,17 @@ public class RequestHandler extends Thread {
                 return;
             }
 
+            if (url.equals("/user/list")) {
+                if (!("logined=true".equals(cookie))) {
+                    response302Header(dos, "/user/login.html");
+                    return;
+                }
+                byte[] body = makeUserList();
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+                return;
+            }
+
             String filePath = "./webapp" + url;
             File file = new File(filePath);
             Path path = file.toPath();
@@ -83,6 +98,20 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private byte[] makeUserList() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body><table>");
+        for (User user : DataBase.findAll()) {
+            sb.append("<tr>");
+            sb.append("<td>").append(user.getUserId()).append("</td>");
+            sb.append("<td>").append(user.getName()).append("</td>");
+            sb.append("<td>").append(user.getEmail()).append("</td>");
+            sb.append("</tr>");
+        }
+        sb.append("</table></body></html>");
+        return sb.toString().getBytes();
     }
 
     private void response302LoginHeader(DataOutputStream dos, String location, String cookie) {
