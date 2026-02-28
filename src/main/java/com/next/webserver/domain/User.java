@@ -1,4 +1,4 @@
-package com.next.webserver;
+package com.next.webserver.domain;
 
 public class User {
 
@@ -17,5 +17,13 @@ public class User {
     @Override
     public String toString() {
         return "User{userId=" + userId + ", password=" + password + ", name=" + name + ", email=" + email + "}";
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import com.next.webserver.domain.User;
+import com.next.webserver.repository.DataBase;
 import com.next.webserver.utils.HttpRequestUtils;
 import com.next.webserver.utils.IOUtils;
 import org.slf4j.Logger;
@@ -43,7 +45,7 @@ public class RequestHandler extends Thread {
             }
 
             DataOutputStream dos = new DataOutputStream(out);
-            if ("POST".equals(method)) {
+            if ("POST".equals(method) && url.equals("/user/create")) {
                 String body = IOUtils.readData(br, contentLength);
                 Map<String, String> params = HttpRequestUtils.parseQueryString(body);
                 User user = new User(
@@ -52,8 +54,22 @@ public class RequestHandler extends Thread {
                         params.get("name"),
                         params.get("email")
                 );
+                DataBase.addUser(user);
                 log.debug("user : {}", user);
                 response302Header(dos, "/index.html");
+                return;
+            }
+
+            if ("POST".equals(method) && url.equals("/user/login")) {
+                String body = IOUtils.readData(br, contentLength);
+                Map<String, String> params = HttpRequestUtils.parseQueryString(body);
+                User user = DataBase.findUserById(params.get("userId"));
+
+                if (user != null && user.getPassword().equals(params.get("password"))) {
+                    response302LoginHeader(dos, "/index.html", "logined=true");
+                } else {
+                    response302LoginHeader(dos, "/user/login_failed.html", "logined=false");
+                }
                 return;
             }
 
@@ -64,6 +80,17 @@ public class RequestHandler extends Thread {
 
             response200Header(dos, body.length);
             responseBody(dos, body);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302LoginHeader(DataOutputStream dos, String location, String cookie) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
+            dos.writeBytes("Set-Cookie: " + cookie + "\r\n");
+            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
