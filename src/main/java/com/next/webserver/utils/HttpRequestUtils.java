@@ -1,5 +1,7 @@
 package com.next.webserver.utils;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +17,8 @@ public class HttpRequestUtils {
         String[] tokens = queryString.split("&");
         for(String token : tokens) {
             String[] pair = token.split("=");
-            if(pair.length == 2) {
-                params.put(pair[0], pair[1]);
+            if (pair.length == 2) {
+                params.put(pair[0], URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
             }
         }
         return params;

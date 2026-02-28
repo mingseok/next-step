@@ -83,7 +83,7 @@ public class RequestHandler extends Thread {
                     return;
                 }
                 byte[] body = makeUserList();
-                response200Header(dos, body.length);
+                response200Header(dos, body.length, "text/html");
                 responseBody(dos, body);
                 return;
             }
@@ -93,7 +93,8 @@ public class RequestHandler extends Thread {
             Path path = file.toPath();
             byte[] body = Files.readAllBytes(path);
 
-            response200Header(dos, body.length);
+            String contentType = url.endsWith(".css") ? "text/css" : "text/html";
+            response200Header(dos, body.length, contentType);
             responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -102,7 +103,7 @@ public class RequestHandler extends Thread {
 
     private byte[] makeUserList() {
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><body><table>");
+        sb.append("<html><head><link rel='stylesheet' href='/css/style.css'></head><body><table>");
         for (User user : DataBase.findAll()) {
             sb.append("<tr>");
             sb.append("<td>").append(user.getUserId()).append("</td>");
@@ -135,10 +136,10 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String contentType) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Type: " + contentType + ";charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
