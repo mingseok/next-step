@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.next.webserver.domain.User;
@@ -35,18 +36,18 @@ public class RequestHandler extends Thread {
             String method = line.split(" ")[0];
             log.debug("request url : {}", url);
 
-            int contentLength = 0;
-            String cookie = "";
+            Map<String, String> headers = new HashMap<>();
             while (line != null && !line.isEmpty()) {
                 log.debug("request : {}", line);
-                if (line.contains("Content-Length")) {
-                    contentLength = Integer.parseInt(line.split(": ")[1].trim());
-                }
-                if (line.contains("Cookie")) {
-                    cookie = line.split(": ")[1].trim();
+                String[] tokens = line.split(": ", 2);
+                if (tokens.length == 2) {
+                    headers.put(tokens[0], tokens[1].trim());
                 }
                 line = br.readLine();
             }
+
+            int contentLength = getContentLength(headers);
+            String cookie = getCookie(headers);
 
             DataOutputStream dos = new DataOutputStream(out);
             if ("POST".equals(method) && url.equals("/user/create")) {
@@ -154,5 +155,13 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private int getContentLength(Map<String, String> headers) {
+        return Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+    }
+
+    private String getCookie(Map<String, String> headers) {
+        return headers.getOrDefault("Cookie", "");
     }
 }
