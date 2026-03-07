@@ -13,10 +13,8 @@ public class WebServer {
     private static final int DEFAULT_PORT = 8080;
 
     public static void main(String[] args) {
-        int port;
-        if (args == null || args.length == 0) {
-            port = DEFAULT_PORT;
-        } else {
+        int port = DEFAULT_PORT;
+        if (args != null && args.length > 0) {
             port = Integer.parseInt(args[0]);
         }
 

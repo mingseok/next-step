@@ -23,11 +23,15 @@ public class HttpResponse {
         headers.put(name, value);
     }
 
-    public void forward(String url) throws IOException {
-        byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-        String contentType = resolveContentType(url);
-        response200Header(body.length, contentType);
-        responseBody(body);
+    public void forward(String url) {
+        try {
+            byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+            String contentType = resolveContentType(url);
+            response200Header(body.length, contentType);
+            responseBody(body);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
     public void forwardBody(String html) {
@@ -59,9 +63,13 @@ public class HttpResponse {
         }
     }
 
-    private void writeHeaders() throws IOException {
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            dos.writeBytes(entry.getKey() + ": " + entry.getValue() + "\r\n");
+    private void writeHeaders() {
+        try {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                dos.writeBytes(entry.getKey() + ": " + entry.getValue() + "\r\n");
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -75,8 +83,13 @@ public class HttpResponse {
     }
 
     private String resolveContentType(String url) {
-        if (url.endsWith(".css")) return "text/css";
-        if (url.endsWith(".js")) return "application/javascript";
+        if (url.endsWith(".css")) {
+            return "text/css";
+        }
+
+        if (url.endsWith(".js")) {
+            return "application/javascript";
+        }
         return "text/html";
     }
 }
