@@ -4,7 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.next.webserver.domain.User;
@@ -36,16 +37,7 @@ public class RequestHandler extends Thread {
             String method = line.split(" ")[0];
             log.debug("request url : {}", url);
 
-            Map<String, String> headers = new HashMap<>();
-            while (line != null && !line.isEmpty()) {
-                log.debug("request : {}", line);
-                String[] tokens = line.split(": ", 2);
-                if (tokens.length == 2) {
-                    headers.put(tokens[0], tokens[1].trim());
-                }
-                line = br.readLine();
-            }
-
+            List<String> headers = readHeaders(br);
             int contentLength = getContentLength(headers);
             String cookie = getCookie(headers);
 
@@ -157,11 +149,29 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private int getContentLength(Map<String, String> headers) {
-        return Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
+    private List<String> readHeaders(BufferedReader br) throws IOException {
+        List<String> headers = new ArrayList<>();
+        String line;
+        while ((line = br.readLine()) != null && !line.isEmpty()) {
+            log.debug("request : {}", line);
+            headers.add(line);
+        }
+        return headers;
     }
 
-    private String getCookie(Map<String, String> headers) {
-        return headers.getOrDefault("Cookie", "");
+    private int getContentLength(List<String> headers) {
+        return headers.stream()
+                .filter(line -> line.contains("Content-Length"))
+                .mapToInt(line -> Integer.parseInt(line.split(": ")[1].trim()))
+                .findFirst()
+                .orElse(0);
+    }
+
+    private String getCookie(List<String> headers) {
+        return headers.stream()
+                .filter(line -> line.contains("Cookie"))
+                .map(line -> line.split(": ")[1].trim())
+                .findFirst()
+                .orElse("");
     }
 }
